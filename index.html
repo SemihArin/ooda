@@ -9,6 +9,48 @@
 <script>
 (function(){const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="128" fill="#111827"/><path d="M256 120a136 136 0 100 272 136 136 0 000-272zm0 220a84 84 0 110-168 84 84 0 010 168z" fill="#fff"/></svg>`;const enc="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);const l=document.createElement('link');l.rel='apple-touch-icon';l.href=enc;document.head.appendChild(l);})();
 </script>
+    <link rel="icon" id="app-icon">
+<link rel="apple-touch-icon" id="apple-icon">
+<link rel="manifest" id="manifest-link">
+<meta name="theme-color" content="#4f46e5">
+
+<script>
+(function () {
+
+  // ===== ICON (SVG -> DATA URL) =====
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <rect width="512" height="512" rx="120" fill="#4f46e5"/>
+    <circle cx="256" cy="256" r="140" fill="none" stroke="#fff" stroke-width="38"/>
+    <circle cx="256" cy="256" r="42" fill="#fff"/>
+  </svg>`;
+
+  const icon = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+
+  document.getElementById("app-icon").href = icon;
+  document.getElementById("apple-icon").href = icon;
+
+  // ===== MANIFEST =====
+  const manifest = {
+    name: "OODA Finance",
+    short_name: "OODA",
+    start_url: location.href,
+    display: "standalone",
+    background_color: "#f1f5f9",
+    theme_color: "#4f46e5",
+    icons: [
+      { src: icon, sizes: "512x512", type: "image/svg+xml" }
+    ]
+  };
+
+  const blob = new Blob([JSON.stringify(manifest)], {
+    type: "application/manifest+json"
+  });
+
+  const manifestURL = URL.createObjectURL(blob);
+  document.getElementById("manifest-link").href = manifestURL;
+
+})();
+</script>
 <style>
 /* CSS CORE - PREMIUM REDESIGN V12 */
 :root {
@@ -1270,5 +1312,57 @@ const App = {
 
 document.addEventListener('DOMContentLoaded', () => App.init());
 </script>
+    <script>
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  // basit custom prompt
+  const btn = document.createElement("button");
+  btn.innerText = "📲 Uygulamayı Yükle";
+  btn.style = `
+    position:fixed;
+    bottom:90px;
+    right:20px;
+    padding:12px 16px;
+    background:#4f46e5;
+    color:white;
+    border:none;
+    border-radius:12px;
+    font-weight:700;
+    z-index:9999;
+  `;
+
+  document.body.appendChild(btn);
+
+  btn.onclick = async () => {
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    btn.remove();
+  };
+});
+    </script>
+    <script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("data:text/javascript;base64," + btoa(`
+    const CACHE = "ooda-v1";
+
+    self.addEventListener("install", e => {
+      e.waitUntil(
+        caches.open(CACHE).then(cache => cache.addAll(["/"]))
+      );
+    });
+
+    self.addEventListener("fetch", e => {
+      e.respondWith(
+        caches.match(e.request).then(r => r || fetch(e.request))
+      );
+    });
+  `));
+}
+    </script>
 </body>
 </html>
